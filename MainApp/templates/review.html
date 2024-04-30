@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review</title>
+
+    <!-- Sertakan pustaka CSS dan JavaScript lainnya jika diperlukan -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Gaya CSS jika diperlukan */
+        body {
+            padding-top: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="mb-4">Layanan Review</h1>
+
+        <!-- Form untuk menambahkan ulasan -->
+        <div class="card">
+            <div class="card-header">
+                Tambahkan Review Baru
+            </div>
+            <div class="card-body">
+                <form id="review-form">
+                    <div class="mb-3">
+                        <label for="id_tempat" class="form-label">ID Tempat:</label>
+                        <input type="number" class="form-control" id="id_tempat" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ulasan" class="form-label">Ulasan:</label>
+                        <textarea class="form-control" id="ulasan" rows="" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Rating:</label>
+                        <input type="number" class="form-control" id="rating" min="1" max="5" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Tambahkan</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Kontainer untuk menampilkan ulasan -->
+        <div id="reviews-container"></div>
+    </div>
+
+    <!-- Tambahkan skrip JavaScript di bagian bawah file, sebelum penutupan tag </body> -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fungsi untuk memuat ulasan
+        function loadReviews() {
+            // Memuat ulasan dari server
+            $.get('/review', function (data) {
+                const reviewsContainer = $('#reviews-container');
+                reviewsContainer.empty();
+
+                // Tampilkan ulasan
+                data.forEach(function (review) {
+                    const card = `
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">ID Tempat: ${review.id_tempat}</h5>
+                                <p class="card-text">Ulasan: ${review.ulasan}</p>
+                                <p class="card-text">Rating: ${review.rating}</p>
+                            </div>
+                        </div>
+                    `;
+                    reviewsContainer.append(card);
+                });
+            });
+        }
+
+        // Event handler untuk form ulasan
+        $('#review-form').on('submit', function (e) {
+            e.preventDefault();  // Mencegah pengiriman form secara default
+            
+            // Ambil nilai dari form
+            const id_tempat = $('#id_tempat').val();
+            const ulasan = $('#ulasan').val();
+            const rating = $('#rating').val();
+
+            // Kirim permintaan POST ke server dengan header Content-Type: application/json
+            $.ajax({
+                url: '/review/add',
+                type: 'POST',
+                contentType: 'application/json', // Header Content-Type: application/json
+                data: JSON.stringify({
+                    id_tempat: id_tempat,
+                    ulasan: ulasan,
+                    rating: rating
+                }),
+                success: function (data) {
+                    alert(data.message);  // Tampilkan pesan sukses
+                    // Muat ulasan setelah berhasil menambahkan
+                },
+                error: function (xhr) {
+                    alert('Error: ' + xhr.responseJSON.error);  // Tampilkan pesan kesalahan
+                }
+            });
+        });
+
+        // Muat ulasan saat halaman dimuat
+        $(document).ready(function () {
+            loadReviews();
+        });
+    </script>
+</body>
+
+</html>
